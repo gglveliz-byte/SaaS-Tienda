@@ -6,9 +6,24 @@ import { Button, Input, Select, Textarea, Card, CardHeader, CardTitle, CardConte
 import { CATEGORIA_GENERAL_LABELS } from '@/lib/utils'
 import type { Plan, Tienda, Vendedor, CategoriaGeneral } from '@/types'
 
+// Tipo para tienda con campos Decimal convertidos a number
+type TiendaTransformada = Omit<Tienda, 'latitud' | 'longitud'> & {
+  latitud: number | null
+  longitud: number | null
+  vendedor: Vendedor | null
+  plan: Omit<Plan, 'precioMensual'> & {
+    precioMensual: number
+  }
+}
+
+// Tipo para plan con precioMensual como number
+type PlanTransformado = Omit<Plan, 'precioMensual'> & {
+  precioMensual: number
+}
+
 interface EditarTiendaFormProps {
-  tienda: Tienda & { vendedor: Vendedor | null; plan: Plan }
-  planes: Plan[]
+  tienda: TiendaTransformada
+  planes: PlanTransformado[]
 }
 
 export function EditarTiendaForm({ tienda, planes }: EditarTiendaFormProps) {

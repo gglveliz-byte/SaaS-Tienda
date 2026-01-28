@@ -35,7 +35,7 @@ async function getPlanes() {
     maxProductos: p.maxProductos,
     maxImagenesPorProducto: p.maxImagenesPorProducto,
     activo: p.activo,
-    createdAt: p.createdAt.toISOString(),
+    createdAt: p.createdAt,
   }))
 }
 
