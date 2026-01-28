@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CategoriaPreview } from '@/components/home/CategoriaPreview'
 
 export default function HomePage() {
   return (
@@ -41,7 +42,7 @@ export default function HomePage() {
           desde cualquier lugar. Sin complicaciones.
         </p>
         <a
-          href="https://wa.me/521234567890?text=Hola,%20quiero%20crear%20mi%20tienda%20en%20línea"
+          href="https://wa.me/593987865420?text=Hola,%20quiero%20crear%20mi%20tienda%20en%20línea"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 px-8 py-4 bg-green-600 text-white text-lg font-semibold rounded-xl hover:bg-green-700 transition-colors"
@@ -108,19 +109,11 @@ export default function HomePage() {
         <p className="text-gray-400 text-center mb-16 max-w-2xl mx-auto">
           Tu tienda se adapta automáticamente al estilo de tu negocio
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="aspect-video rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 p-6 flex items-end">
-            <span className="text-white font-semibold">Tecnología</span>
-          </div>
-          <div className="aspect-video rounded-xl bg-gradient-to-br from-yellow-600 to-amber-400 p-6 flex items-end">
-            <span className="text-white font-semibold">Moda</span>
-          </div>
-          <div className="aspect-video rounded-xl bg-gradient-to-br from-orange-600 to-red-500 p-6 flex items-end">
-            <span className="text-white font-semibold">Comida</span>
-          </div>
-          <div className="aspect-video rounded-xl bg-gradient-to-br from-indigo-600 to-purple-500 p-6 flex items-end">
-            <span className="text-white font-semibold">General</span>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <CategoriaPreview categoria="tecnologia" nombre="Tecnología" />
+          <CategoriaPreview categoria="moda" nombre="Moda" />
+          <CategoriaPreview categoria="comida" nombre="Comida" />
+          <CategoriaPreview categoria="general" nombre="General" />
         </div>
       </section>
 
@@ -134,7 +127,7 @@ export default function HomePage() {
             Contáctanos y te ayudamos a crear tu tienda
           </p>
           <a
-            href="https://wa.me/521234567890?text=Hola,%20quiero%20crear%20mi%20tienda%20en%20línea"
+            href="https://wa.me/593987865420?text=Hola,%20quiero%20crear%20mi%20tienda%20en%20línea"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 px-8 py-4 bg-white text-gray-900 text-lg font-semibold rounded-xl hover:bg-gray-100 transition-colors"
