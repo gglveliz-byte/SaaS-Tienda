@@ -6,8 +6,13 @@ import { Button, Input, Select, Textarea, Card, CardHeader, CardTitle, CardConte
 import { slugify, CATEGORIA_GENERAL_LABELS } from '@/lib/utils'
 import type { Plan, CategoriaGeneral } from '@/types'
 
+// Tipo para plan con precioMensual como number
+type PlanTransformado = Omit<Plan, 'precioMensual'> & {
+  precioMensual: number
+}
+
 interface CrearTiendaFormProps {
-  planes: Plan[]
+  planes: PlanTransformado[]
 }
 
 export function CrearTiendaForm({ planes }: CrearTiendaFormProps) {
