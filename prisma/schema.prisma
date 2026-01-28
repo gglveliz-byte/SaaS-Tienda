@@ -1,0 +1,260 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["tienda_saas"]
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum CategoriaGeneral {
+  tecnologia
+  moda
+  comida
+  general
+
+  @@schema("tienda_saas")
+}
+
+enum TipoArchivo {
+  imagen
+  video
+
+  @@schema("tienda_saas")
+}
+
+enum EstadoPedido {
+  pendiente
+  en_proceso
+  completado
+  cancelado
+
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// ADMIN (Solo el dueño del SaaS)
+// ============================================
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  nombre       String
+  whatsapp     String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// RECUPERACIÓN DE CONTRASEÑA
+// ============================================
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  tipo      String   // 'admin' | 'vendedor'
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// PLANES DE SUSCRIPCIÓN
+// ============================================
+
+model Plan {
+  id                     String   @id @default(uuid())
+  nombre                 String
+  precioMensual          Decimal  @map("precio_mensual") @db.Decimal(10, 2)
+  permiteVideos          Boolean  @default(false) @map("permite_videos")
+  maxProductos           Int      @default(50) @map("max_productos")
+  maxImagenesPorProducto Int      @default(5) @map("max_imagenes_por_producto")
+  activo                 Boolean  @default(true)
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  tiendas Tienda[]
+
+  @@map("planes")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// TIENDAS
+// ============================================
+
+model Tienda {
+  id               String           @id @default(uuid())
+  slug             String           @unique
+  nombre           String
+  descripcion      String?
+  categoriaGeneral CategoriaGeneral @default(general) @map("categoria_general")
+  whatsapp         String
+  direccion        String?
+  latitud          Decimal?         @db.Decimal(10, 8)
+  longitud         Decimal?         @db.Decimal(11, 8)
+  coloresTema      Json?            @map("colores_tema")
+  activa           Boolean          @default(true)
+  fechaVencimiento DateTime?        @map("fecha_vencimiento")
+  createdAt        DateTime         @default(now()) @map("created_at")
+
+  planId String @map("plan_id")
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  vendedor   Vendedor?
+  categorias CategoriaProducto[]
+  productos  Producto[]
+  archivos   Archivo[]
+  pedidos    Pedido[]
+
+  @@map("tiendas")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// VENDEDORES (Dueños de tienda)
+// ============================================
+
+model Vendedor {
+  id                 String   @id @default(uuid())
+  email              String   @unique
+  passwordHash       String   @map("password_hash")
+  nombre             String
+  telefono           String?
+  mustChangePassword Boolean  @default(true) @map("must_change_password")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  tiendaId String @unique @map("tienda_id")
+  tienda   Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  @@map("vendedores")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// CATEGORÍAS DE PRODUCTOS (por tienda)
+// ============================================
+
+model CategoriaProducto {
+  id       String  @id @default(uuid())
+  nombre   String
+  orden    Int     @default(0)
+  activa   Boolean @default(true)
+
+  tiendaId String @map("tienda_id")
+  tienda   Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  productos Producto[]
+
+  @@map("categorias_producto")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// PRODUCTOS
+// ============================================
+
+model Producto {
+  id           String   @id @default(uuid())
+  nombre       String
+  descripcion  String?
+  precio       Decimal  @db.Decimal(10, 2)
+  precioOferta Decimal? @map("precio_oferta") @db.Decimal(10, 2)
+  stock        Int      @default(0)
+  activo       Boolean  @default(true)
+  destacado    Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tiendaId    String             @map("tienda_id")
+  tienda      Tienda             @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+  categoriaId String?            @map("categoria_id")
+  categoria   CategoriaProducto? @relation(fields: [categoriaId], references: [id], onDelete: SetNull)
+
+  archivos    Archivo[]
+  itemsPedido ItemPedido[]
+
+  @@map("productos")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// ARCHIVOS (Imágenes y Videos)
+// ============================================
+
+model Archivo {
+  id             String      @id @default(uuid())
+  tipo           TipoArchivo
+  nombreOriginal String      @map("nombre_original")
+  mimeType       String      @map("mime_type")
+  tamano         Int         @map("tamano")
+  data           Bytes
+  orden          Int         @default(0)
+  esBanner       Boolean     @default(false) @map("es_banner")
+  esLogo         Boolean     @default(false) @map("es_logo")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  tiendaId   String    @map("tienda_id")
+  tienda     Tienda    @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+  productoId String?   @map("producto_id")
+  producto   Producto? @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@map("archivos")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// PEDIDOS
+// ============================================
+
+model Pedido {
+  id                String       @id @default(uuid())
+  numeroPedido      Int          @map("numero_pedido")
+  clienteNombre     String       @map("cliente_nombre")
+  clienteTelefono   String       @map("cliente_telefono")
+  clienteDireccion  String?      @map("cliente_direccion")
+  notas             String?
+  subtotal          Decimal      @db.Decimal(10, 2)
+  total             Decimal      @db.Decimal(10, 2)
+  estado            EstadoPedido @default(pendiente)
+  enviadoWhatsapp   Boolean      @default(false) @map("enviado_whatsapp")
+  createdAt         DateTime     @default(now()) @map("created_at")
+
+  tiendaId String @map("tienda_id")
+  tienda   Tienda @relation(fields: [tiendaId], references: [id], onDelete: Cascade)
+
+  items ItemPedido[]
+
+  @@map("pedidos")
+  @@schema("tienda_saas")
+}
+
+// ============================================
+// ITEMS DEL PEDIDO
+// ============================================
+
+model ItemPedido {
+  id             String  @id @default(uuid())
+  nombreProducto String  @map("nombre_producto")
+  precioUnitario Decimal @map("precio_unitario") @db.Decimal(10, 2)
+  cantidad       Int
+  subtotal       Decimal @db.Decimal(10, 2)
+
+  pedidoId   String   @map("pedido_id")
+  pedido     Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  productoId String   @map("producto_id")
+  producto   Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+
+  @@map("items_pedido")
+  @@schema("tienda_saas")
+}
