@@ -55,23 +55,23 @@ export default async function TiendaLayout({
         }}
       />
 
-      {/* Banner */}
+      {/* Banner - móvil: altura proporcional */}
       {banner && (
         <div
-          className="h-40 sm:h-48 md:h-64 bg-cover bg-center rounded-b-2xl overflow-hidden"
+          className="h-32 sm:h-48 md:h-64 bg-cover bg-center rounded-b-2xl overflow-hidden"
           style={{
             backgroundImage: `url(/api/archivos/${banner.id})`,
           }}
         >
-          <div className="h-full w-full bg-black/30 flex items-center justify-center px-4">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg text-center">
+          <div className="h-full w-full bg-black/30 flex items-center justify-center px-3 sm:px-4">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg text-center">
               {tienda.nombre}
             </h1>
           </div>
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 py-8">{children}</main>
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-5 sm:py-8">{children}</main>
 
       <TiendaFooter
         tienda={{

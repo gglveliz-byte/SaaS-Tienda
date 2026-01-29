@@ -40,6 +40,7 @@ export function Catalogo({
   const [busqueda, setBusqueda] = useState('')
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string | null>(null)
   const [ordenar, setOrdenar] = useState<'reciente' | 'precio-asc' | 'precio-desc'>('reciente')
+  const [productoAgregado, setProductoAgregado] = useState<string | null>(null)
 
   const { agregar, obtenerCantidad } = useCarrito(tiendaSlug)
 
@@ -86,11 +87,15 @@ export function Catalogo({
       stock: producto.stock,
       imagenId: producto.imagenId,
     })
+
+    // Mostrar feedback visual
+    setProductoAgregado(producto.id)
+    setTimeout(() => setProductoAgregado(null), 1500)
   }
 
   return (
-    <div className="space-y-8">
-      {/* Buscador y filtros */}
+    <div className="space-y-5 sm:space-y-8">
+      {/* Buscador y filtros - inputs táctiles */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         <div className="flex-1 relative">
           <input
@@ -98,7 +103,7 @@ export function Catalogo({
             placeholder="Buscar productos..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full px-4 py-3 pl-11 sm:pl-12 bg-white border border-[var(--muted)]/30 rounded-xl text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent shadow-sm"
+            className="w-full min-h-[44px] px-4 py-3 pl-11 sm:pl-12 bg-white border border-[var(--muted)]/30 rounded-xl text-base text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent shadow-sm touch-manipulation"
           />
           <svg
             className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted)]"
@@ -113,7 +118,7 @@ export function Catalogo({
         <select
           value={ordenar}
           onChange={(e) => setOrdenar(e.target.value as typeof ordenar)}
-          className="w-full sm:w-auto px-4 py-3 bg-white border border-[var(--muted)]/30 rounded-xl text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] shadow-sm appearance-none cursor-pointer bg-no-repeat bg-[length:1rem] bg-[right_0.75rem_center] pr-10"
+          className="w-full sm:w-auto min-h-[44px] px-4 py-3 bg-white border border-[var(--muted)]/30 rounded-xl text-base text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] shadow-sm appearance-none cursor-pointer bg-no-repeat bg-[length:1rem] bg-[right_0.75rem_center] pr-10 touch-manipulation"
           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2364748b\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/%3E%3C/svg%3E")' }}
         >
           <option value="reciente">Más recientes</option>
@@ -126,23 +131,25 @@ export function Catalogo({
       {categorias.length > 0 && (
         <div className="flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={() => setCategoriaSeleccionada(null)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+            className={`min-h-[44px] px-4 py-2.5 rounded-full text-sm font-medium transition-colors border touch-manipulation active:scale-[0.98] ${
               !categoriaSeleccionada
                 ? 'bg-[var(--primary)] text-white border-[var(--primary)]'
-                : 'bg-white text-[var(--text)] border-[var(--muted)]/30 hover:border-[var(--primary)]/50'
+                : 'bg-white text-[var(--text)] border-[var(--muted)]/30 hover:border-[var(--primary)]/50 active:bg-gray-50'
             }`}
           >
             Todos
           </button>
           {categorias.map((cat) => (
             <button
+              type="button"
               key={cat.id}
               onClick={() => setCategoriaSeleccionada(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+              className={`min-h-[44px] px-4 py-2.5 rounded-full text-sm font-medium transition-colors border touch-manipulation active:scale-[0.98] ${
                 categoriaSeleccionada === cat.id
                   ? 'bg-[var(--primary)] text-white border-[var(--primary)]'
-                  : 'bg-white text-[var(--text)] border-[var(--muted)]/30 hover:border-[var(--primary)]/50'
+                  : 'bg-white text-[var(--text)] border-[var(--muted)]/30 hover:border-[var(--primary)]/50 active:bg-gray-50'
               }`}
             >
               {cat.nombre}
@@ -166,9 +173,9 @@ export function Catalogo({
             return (
               <div
                 key={producto.id}
-                className="group bg-white rounded-2xl overflow-hidden border border-[var(--muted)]/20 hover:border-[var(--primary)]/40 hover:shadow-md transition-all duration-300"
+                className="group bg-white rounded-2xl overflow-hidden border border-[var(--muted)]/20 hover:border-[var(--primary)]/40 active:scale-[0.99] hover:shadow-md transition-all duration-300 touch-manipulation"
               >
-                <Link href={`/tienda/${tiendaSlug}/producto/${producto.id}`}>
+                <Link href={`/tienda/${tiendaSlug}/producto/${producto.id}`} className="block active:opacity-95">
                   <div className="aspect-square relative overflow-hidden bg-[var(--secondary)]/30">
                     {producto.imagenId ? (
                       <Image
@@ -223,20 +230,40 @@ export function Catalogo({
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => handleAgregar(producto)}
-                    disabled={producto.stock === 0}
-                    className={`mt-4 w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    disabled={producto.stock === 0 || productoAgregado === producto.id}
+                    className={`mt-4 w-full min-h-[44px] py-2.5 rounded-xl text-sm font-medium transition-all duration-300 relative overflow-hidden touch-manipulation ${
                       producto.stock === 0
                         ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : 'bg-[var(--primary)] text-white hover:brightness-110 shadow-sm'
+                        : productoAgregado === producto.id
+                        ? 'bg-green-500 text-white scale-105'
+                        : 'bg-[var(--primary)] text-white hover:brightness-110 shadow-sm active:scale-95'
                     }`}
                   >
                     {producto.stock === 0 ? (
                       'Agotado'
+                    ) : productoAgregado === producto.id ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Agregado
+                      </span>
                     ) : cantidadEnCarrito > 0 ? (
-                      `En carrito (${cantidadEnCarrito})`
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Agregar más ({cantidadEnCarrito})
+                      </span>
                     ) : (
-                      'Agregar al carrito'
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        Agregar
+                      </span>
                     )}
                   </button>
                 </div>

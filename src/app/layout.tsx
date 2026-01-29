@@ -9,6 +9,14 @@ export const metadata: Metadata = {
   description: 'Plataforma para crear y gestionar tiendas en línea con pedidos por WhatsApp',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: '#0a0a0a',
+}
+
 export default function RootLayout({
   children,
 }: {

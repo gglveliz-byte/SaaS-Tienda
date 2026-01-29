@@ -4,6 +4,11 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
+interface AdminSidebarProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
 const menuItems = [
   {
     href: '/admin',
@@ -34,7 +39,7 @@ const menuItems = [
   },
 ]
 
-export function AdminSidebar() {
+export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -44,53 +49,91 @@ export function AdminSidebar() {
     router.refresh()
   }
 
+  const handleNavClick = () => {
+    if (window.innerWidth < 1024) {
+      onClose()
+    }
+  }
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-      <div className="p-6 border-b border-gray-800">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <span className="text-2xl">🏪</span>
-          Tienda SaaS
-        </h1>
-        <p className="text-xs text-gray-500 mt-1">Panel de Administración</p>
-      </div>
+    <>
+      {/* Overlay para móvil */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      <nav className="flex-1 p-4">
-        <ul className="space-y-1">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href ||
-              (item.href !== '/admin' && pathname.startsWith(item.href))
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          'fixed left-0 top-0 h-screen w-72 lg:w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-50 transition-transform duration-300 ease-in-out',
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        )}
+      >
+        {/* Header del sidebar */}
+        <div className="p-4 lg:p-6 border-b border-gray-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl lg:text-2xl">🏪</span>
+            <div>
+              <h1 className="text-lg lg:text-xl font-bold text-white">Tienda SaaS</h1>
+              <p className="text-xs text-gray-500">Panel de Administracion</p>
+            </div>
+          </div>
+          {/* Botón cerrar solo en móvil */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                  )}
-                >
-                  {item.icon}
-                  {item.label}
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
+        {/* Navegación */}
+        <nav className="flex-1 p-3 lg:p-4 overflow-y-auto">
+          <ul className="space-y-1">
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href ||
+                (item.href !== '/admin' && pathname.startsWith(item.href))
 
-      <div className="p-4 border-t border-gray-800">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Cerrar sesión
-        </button>
-      </div>
-    </aside>
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={handleNavClick}
+                    className={cn(
+                      'flex items-center gap-3 min-h-[44px] px-4 py-3 rounded-xl text-sm font-medium transition-all touch-manipulation active:scale-[0.99]',
+                      isActive
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800 active:bg-gray-700'
+                    )}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+
+        {/* Footer con logout */}
+        <div className="p-3 lg:p-4 border-t border-gray-800">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full min-h-[44px] px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 active:bg-gray-700 transition-colors touch-manipulation"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Cerrar sesion
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }

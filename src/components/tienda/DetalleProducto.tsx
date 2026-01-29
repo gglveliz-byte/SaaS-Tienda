@@ -70,10 +70,15 @@ export function DetalleProducto({
           {archivoSeleccionado ? (
             archivoSeleccionado.tipo === 'video' ? (
               <video
+                key={archivoSeleccionado.id}
                 src={`/api/archivos/${archivoSeleccionado.id}`}
                 controls
-                className="w-full h-full object-contain"
-              />
+                playsInline
+                preload="metadata"
+                className="w-full h-full object-contain bg-black"
+              >
+                Tu navegador no soporta videos.
+              </video>
             ) : (
               <Image
                 src={`/api/archivos/${archivoSeleccionado.id}`}

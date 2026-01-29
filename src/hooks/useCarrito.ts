@@ -10,6 +10,7 @@ interface UseCarritoReturn {
   tiendaSlug: string | null
   total: number
   totalItems: number
+  isLoaded: boolean
   agregar: (item: Omit<CarritoItem, 'cantidad'>, cantidad?: number) => void
   eliminar: (productoId: string) => void
   actualizar: (productoId: string, cantidad: number) => void
@@ -122,6 +123,7 @@ export function useCarrito(slugTienda?: string): UseCarritoReturn {
     tiendaSlug,
     total,
     totalItems,
+    isLoaded,
     agregar,
     eliminar,
     actualizar,
