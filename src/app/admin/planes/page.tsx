@@ -106,7 +106,7 @@ export default function PlanesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
       </div>
     )
   }
@@ -115,8 +115,8 @@ export default function PlanesPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Planes</h1>
-          <p className="text-gray-400 mt-1">Gestiona los planes de suscripción</p>
+          <h1 className="text-2xl font-bold text-gray-900">Planes</h1>
+          <p className="text-gray-500 mt-0.5">Gestiona los planes de suscripción</p>
         </div>
         <Button onClick={() => openModal()}>
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,7 +130,7 @@ export default function PlanesPage() {
         <Card>
           <CardContent className="text-center py-12">
             <div className="text-6xl mb-4">📋</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No hay planes</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay planes</h3>
             <p className="text-gray-400 mb-6">Crea el primer plan para poder crear tiendas</p>
             <Button onClick={() => openModal()}>Crear primer plan</Button>
           </CardContent>
@@ -146,12 +146,12 @@ export default function PlanesPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-white mb-4">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                   {formatPrice(Number(plan.precioMensual))}
-                  <span className="text-sm font-normal text-gray-400">/mes</span>
+                  <span className="text-sm font-normal text-gray-500">/mes</span>
                 </div>
 
-                <ul className="space-y-2 text-sm text-gray-300">
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <li className="flex items-center gap-2">
                     <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -237,16 +237,16 @@ export default function PlanesPage() {
             />
           </div>
 
-          <label className="flex items-center gap-3 p-4 bg-gray-800 rounded-lg cursor-pointer">
+          <label className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer">
             <input
               type="checkbox"
               checked={formData.permiteVideos}
               onChange={(e) => setFormData({ ...formData, permiteVideos: e.target.checked })}
-              className="w-5 h-5 rounded border-gray-600 bg-gray-700 text-indigo-600 focus:ring-indigo-500"
+              className="w-5 h-5 rounded border-gray-300 accent-amber-500"
             />
             <div>
-              <span className="text-white font-medium">Permitir videos</span>
-              <p className="text-sm text-gray-400">Los vendedores podrán subir videos de productos</p>
+              <span className="text-gray-900 font-semibold">Permitir videos</span>
+              <p className="text-sm text-gray-500">Los vendedores podrán subir videos de productos</p>
             </div>
           </label>
 

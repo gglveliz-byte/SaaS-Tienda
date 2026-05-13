@@ -6,39 +6,24 @@ async function getTienda(slug: string) {
   return prisma.tienda.findUnique({
     where: { slug, activa: true },
     include: {
-      categorias: {
-        where: { activa: true },
-        orderBy: { orden: 'asc' },
-      },
+      categorias: { where: { activa: true }, orderBy: { orden: 'asc' } },
       productos: {
         where: { activo: true },
         orderBy: [{ destacado: 'desc' }, { createdAt: 'desc' }],
         include: {
           categoria: true,
-          archivos: {
-            where: { tipo: 'imagen' },
-            take: 1,
-            orderBy: { orden: 'asc' },
-          },
+          archivos: { where: { tipo: 'imagen' }, take: 1, orderBy: { orden: 'asc' } },
         },
       },
     },
   })
 }
 
-export default async function TiendaCatalogoPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function TiendaCatalogoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const tienda = await getTienda(slug)
+  if (!tienda) notFound()
 
-  if (!tienda) {
-    notFound()
-  }
-
-  // Transformar productos para el componente
   const productos = tienda.productos.map((p) => ({
     id: p.id,
     nombre: p.nombre,
@@ -52,16 +37,18 @@ export default async function TiendaCatalogoPage({
     imagenId: p.archivos[0]?.id,
   }))
 
-  const categorias = tienda.categorias.map((c) => ({
-    id: c.id,
-    nombre: c.nombre,
-  }))
+  const categorias = tienda.categorias.map((c) => ({ id: c.id, nombre: c.nombre }))
 
   return (
     <Catalogo
       productos={productos}
       categorias={categorias}
       tiendaSlug={tienda.slug}
+      tiendaNombre={tienda.nombre}
+      tiendaWhatsapp={(tienda as any).whatsapp ?? null}
+      tiendaDireccion={(tienda as any).direccion ?? null}
+      tiendaLatitud={tienda.latitud ? Number(tienda.latitud) : null}
+      tiendaLongitud={tienda.longitud ? Number(tienda.longitud) : null}
       categoriaGeneral={tienda.categoriaGeneral}
     />
   )

@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+﻿import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { ProductoForm } from '@/components/vendedor/ProductoForm'
 
@@ -28,8 +28,8 @@ export default async function NuevoProductoPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Nuevo Producto</h1>
-        <p className="text-gray-400 mt-1">Añade un producto a tu catálogo</p>
+        <h1 className="text-2xl font-bold text-gray-900">Nuevo Producto</h1>
+        <p className="text-gray-500 mt-0.5">Añade un producto a tu catálogo</p>
       </div>
 
       <ProductoForm

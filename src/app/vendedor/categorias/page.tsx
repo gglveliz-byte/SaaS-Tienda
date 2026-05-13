@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, Modal, Badge } from '@/components/ui'
@@ -103,8 +103,8 @@ export default function CategoriasPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Categorías</h1>
-          <p className="text-gray-400 mt-1">Organiza tus productos por categorías</p>
+          <h1 className="text-2xl font-bold text-gray-900">Categorías</h1>
+          <p className="text-gray-500 mt-0.5">Organiza tus productos por categorías</p>
         </div>
         <Button onClick={() => openModal()}>
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +118,7 @@ export default function CategoriasPage() {
         <Card>
           <CardContent className="text-center py-12">
             <div className="text-6xl mb-4">🏷️</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No hay categorías</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No hay categorías</h3>
             <p className="text-gray-400 mb-6">Crea categorías para organizar tus productos</p>
             <Button onClick={() => openModal()}>Crear primera categoría</Button>
           </CardContent>

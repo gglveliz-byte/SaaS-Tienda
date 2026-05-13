@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -41,7 +41,7 @@ export default function VendedorOlvideContrasenaPage() {
     <Card className="w-full max-w-md">
       <div className="text-center mb-6">
         <span className="text-5xl mb-4 block">🔐</span>
-        <h1 className="text-2xl font-bold text-white">Recuperar contraseña</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Recuperar contraseña</h1>
         <p className="text-gray-400 mt-2">Ingresa tu correo y te enviamos un enlace</p>
       </div>
 

@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
-import { Card, CardContent, Button, Badge } from '@/components/ui'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -11,11 +10,7 @@ async function getProductos(tiendaId: string) {
     orderBy: { createdAt: 'desc' },
     include: {
       categoria: true,
-      archivos: {
-        where: { tipo: 'imagen' },
-        take: 1,
-        orderBy: { orden: 'asc' },
-      },
+      archivos: { where: { tipo: 'imagen' }, take: 1, orderBy: { orden: 'asc' } },
     },
   })
 }
@@ -27,105 +22,142 @@ export default async function ProductosPage() {
   const productos = await getProductos(session.tiendaId)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Encabezado */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Productos</h1>
-          <p className="text-gray-400 mt-1">Gestiona tu catálogo de productos</p>
+          <h1 className="text-2xl font-bold text-gray-900">Productos</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Gestiona tu catálogo de productos</p>
         </div>
-        <Link href="/vendedor/productos/nuevo">
-          <Button>
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Nuevo Producto
-          </Button>
+        <Link
+          href="/vendedor/productos/nuevo"
+          className="inline-flex items-center gap-2 bg-[#FFC107] hover:bg-[#EBB413] text-gray-900 font-semibold px-4 py-2.5 rounded-xl transition-colors text-sm shadow-sm"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+          Nuevo Producto
         </Link>
       </div>
 
       {productos.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No hay productos</h3>
-            <p className="text-gray-400 mb-6">Añade tu primer producto al catálogo</p>
-            <Link href="/vendedor/productos/nuevo">
-              <Button>Crear primer producto</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+          <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '36px' }}>inventory_2</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">No hay productos</h3>
+          <p className="text-gray-500 text-sm mb-6">Añade tu primer producto al catálogo</p>
+          <Link
+            href="/vendedor/productos/nuevo"
+            className="inline-flex items-center gap-2 bg-[#FFC107] hover:bg-[#EBB413] text-gray-900 font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+            Crear primer producto
+          </Link>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {productos.map((producto) => (
-            <Card key={producto.id} className="overflow-hidden">
-              <div className="aspect-square bg-gray-800 relative">
-                {producto.archivos[0] ? (
-                  <Image
-                    src={`/api/archivos/${producto.archivos[0].id}`}
-                    alt={producto.nombre}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-600">
-                    <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                )}
-                {!producto.activo && (
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="danger">Inactivo</Badge>
-                  </div>
-                )}
-                {producto.destacado && (
-                  <div className="absolute top-2 left-2">
-                    <Badge variant="warning">Destacado</Badge>
-                  </div>
-                )}
-              </div>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-semibold text-white">{producto.nombre}</h3>
-                    {producto.categoria && (
-                      <p className="text-sm text-gray-500">{producto.categoria.nombre}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    {producto.precioOferta ? (
-                      <>
-                        <p className="text-lg font-bold text-green-400">
-                          {formatPrice(Number(producto.precioOferta))}
-                        </p>
-                        <p className="text-sm text-gray-500 line-through">
-                          {formatPrice(Number(producto.precio))}
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-lg font-bold text-white">
-                        {formatPrice(Number(producto.precio))}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mt-4">
-                  <span className={`text-sm ${
-                    producto.stock === 0
-                      ? 'text-red-400'
-                      : producto.stock <= 5
-                      ? 'text-yellow-400'
-                      : 'text-gray-400'
-                  }`}>
-                    Stock: {producto.stock}
-                  </span>
-                  <Link href={`/vendedor/productos/${producto.id}`}>
-                    <Button variant="outline" size="sm">Editar</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {/* Tabla */}
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left px-5 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Producto</th>
+                <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Categoría</th>
+                <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Precio</th>
+                <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Stock</th>
+                <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Estado</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {productos.map((producto) => {
+                const precioFinal = producto.precioOferta ?? producto.precio
+                const stockBajo = producto.stock <= 5 && producto.stock > 0
+                const agotado = producto.stock === 0
+
+                return (
+                  <tr key={producto.id} className="hover:bg-amber-50/30 transition-colors group border-l-[3px] border-transparent hover:border-[#FFC107]">
+                    {/* Producto */}
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        {/* Imagen pequeña */}
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center shrink-0 border border-gray-100">
+                          {producto.archivos[0] ? (
+                            <Image
+                              src={`/api/archivos/${producto.archivos[0].id}`}
+                              alt={producto.nombre}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '22px' }}>image</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate max-w-[180px]">{producto.nombre}</p>
+                          {producto.destacado && (
+                            <span className="text-[10px] text-amber-600 font-bold uppercase tracking-wider">⭐ Destacado</span>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Categoría */}
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <span className="text-sm text-gray-500">
+                        {producto.categoria?.nombre ?? '—'}
+                      </span>
+                    </td>
+
+                    {/* Precio */}
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{formatPrice(Number(precioFinal))}</p>
+                        {producto.precioOferta && (
+                          <p className="text-xs text-gray-400 line-through">{formatPrice(Number(producto.precio))}</p>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Stock */}
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <span className={`text-sm font-medium ${
+                        agotado ? 'text-red-500' :
+                        stockBajo ? 'text-amber-600' :
+                        'text-gray-700'
+                      }`}>
+                        {producto.stock} und.
+                      </span>
+                    </td>
+
+                    {/* Estado */}
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                        !producto.activo
+                          ? 'bg-gray-50 text-gray-500 border-gray-200'
+                          : agotado
+                          ? 'bg-red-50 text-red-600 border-red-200'
+                          : stockBajo
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      }`}>
+                        {!producto.activo ? 'Inactivo' : agotado ? 'Agotado' : stockBajo ? 'Stock bajo' : 'Activo'}
+                      </span>
+                    </td>
+
+                    {/* Acciones */}
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/vendedor/productos/${producto.id}`}
+                        className="text-sm font-semibold text-gray-600 hover:text-[#1C1C1E] bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Editar
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       )}
     </div>

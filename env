@@ -1,0 +1,18 @@
+# Base de Datos (PostgreSQL)
+# Ejemplo: postgresql://usuario:password@host:5432/nombre_db?schema=tienda_saas
+DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=tienda_saas"
+
+# Seguridad
+JWT_SECRET="una_clave_secreta_muy_larga_y_segura_123456"
+
+# Configuración de Email (Nodemailer/Gmail)
+EMAIL_USER="tu-email@gmail.com"
+EMAIL_APP_PASSWORD="tu-password-de-aplicacion"
+
+# URL del Sitio
+SITE_URL="http://localhost:3000"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Credenciales del Administrador Maestro (SaaS Owner)
+ADMIN_EMAIL="admin@tienda-saas.com"
+ADMIN_PASSWORD="admin_password_123"

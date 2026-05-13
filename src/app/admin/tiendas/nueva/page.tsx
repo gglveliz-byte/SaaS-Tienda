@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma'
+﻿import { prisma } from '@/lib/prisma'
 import { CrearTiendaForm } from '@/components/admin/CrearTiendaForm'
 
 async function getPlanes() {
@@ -24,8 +24,8 @@ export default async function NuevaTiendaPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Nueva Tienda</h1>
-        <p className="text-gray-400 mt-1">Crea una nueva tienda y asigna un vendedor</p>
+        <h1 className="text-2xl font-bold text-gray-900">Nueva Tienda</h1>
+        <p className="text-gray-500 mt-0.5">Crea una nueva tienda y asigna un vendedor</p>
       </div>
 
       {planes.length === 0 ? (

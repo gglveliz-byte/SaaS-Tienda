@@ -1,49 +1,197 @@
 @import "tailwindcss";
 
+/* ── Tienda Digital — Sistema de Diseño Premium ── */
+@theme {
+  /* ── Colores de Marca ── */
+  --color-accent-vibrant:         #F5AB00;   /* Amber premium — más cálido y lujoso */
+  --color-accent-hover:           #DC9B00;
+  --color-primary:                #7A5C00;
+  --color-primary-container:      #F5AB00;
+  --color-primary-fixed:          #FFE0A0;
+  --color-primary-fixed-dim:      #F5AB00;
+  --color-on-primary:             #FFFFFF;
+  --color-on-primary-container:   #6B4F00;
+  --color-on-primary-fixed:       #251A00;
+  --color-inverse-primary:        #F5AB00;
+
+  /* ── Superficies (tema claro elegante) ── */
+  --color-background:             #F7F6F3;   /* Blanco cálido — no frío */
+  --color-surface:                #FFFFFF;   /* Blanco puro para cards */
+  --color-surface-bright:         #FFFFFF;
+  --color-surface-deep:           #0C0C0C;   /* Negro profundo para sidebar */
+  --color-surface-muted:          #2A2A2A;   /* Gris muy oscuro */
+  --color-surface-dim:            #D8D7D3;
+  --color-surface-container:      #EFEFED;
+  --color-surface-container-low:  #F3F2EF;
+  --color-surface-container-high: #E8E7E3;
+  --color-surface-container-highest: #E1E0DC;
+  --color-surface-container-lowest:  #FFFFFF;
+  --color-surface-variant:        #E4E2DC;
+  --color-inverse-surface:        #30302E;
+  --color-inverse-on-surface:     #F2F1ED;
+
+  /* ── Texto ── */
+  --color-on-surface:             #1A1A18;   /* Negro cálido */
+  --color-on-surface-variant:     #50483A;
+  --color-on-background:          #1A1A18;
+
+  /* ── Secundario ── */
+  --color-secondary:              #6A6763;   /* Gris cálido */
+  --color-secondary-container:    #E6E4E0;
+  --color-secondary-fixed:        #E6E4E0;
+  --color-secondary-fixed-dim:    #C8C5C1;
+  --color-on-secondary:           #FFFFFF;
+  --color-on-secondary-container: #666462;
+  --color-on-secondary-fixed:     #1D1B1A;
+  --color-on-secondary-fixed-variant: #484644;
+
+  /* ── Terciario (dorado secundario) ── */
+  --color-tertiary:               #7A5C00;
+  --color-tertiary-container:     #FABE29;
+  --color-tertiary-fixed:         #FFE09E;
+  --color-tertiary-fixed-dim:     #F7C024;
+  --color-on-tertiary:            #FFFFFF;
+  --color-on-tertiary-container:  #6B4F00;
+  --color-on-tertiary-fixed:      #261B00;
+  --color-on-tertiary-fixed-variant: #5C4400;
+
+  /* ── Bordes elegantes ── */
+  --color-outline:                #857A67;
+  --color-outline-variant:        #D5C9B4;
+  --color-border-light:           #EAEAE6;   /* Borde muy suave, cálido */
+
+  /* ── Error ── */
+  --color-error:                  #C0392B;
+  --color-error-container:        #FDECEA;
+  --color-on-error:               #FFFFFF;
+  --color-on-error-container:     #922B21;
+
+  /* ── Surface tint ── */
+  --color-surface-tint:           #7A5C00;
+
+  /* ── Tipografía ── */
+  --font-rubik: "Rubik", sans-serif;
+  --font-sans:  "Rubik", sans-serif;
+}
+
+/* ── Base ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Safe area para móviles con notch/home indicator */
-  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-top:    env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-area-left: env(safe-area-inset-left, 0px);
-  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-left:   env(safe-area-inset-left, 0px);
+  --safe-area-right:  env(safe-area-inset-right, 0px);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  /* Móvil: mejorar tacto y evitar zoom no deseado en inputs */
+  font-family: "Rubik", system-ui, sans-serif;
+  background: #F5F5F5;
+  color: #1A1A18;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Áreas seguras para contenido fijo (header/footer) en móvil */
-.safe-area-inset-top {
-  padding-top: var(--safe-area-top);
+/* ── Scrollbar hide (para carousels) ── */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ── Safety net: dark-theme text sobre fondos claros ──
+   Aplica solo a elementos de primer nivel del dashboard
+   (no afecta sidebar ni componentes con bg oscuro propio) ── */
+.lg\:ml-64 > div > h1,
+.lg\:ml-64 > div > p {
+  color: #1A1A18;
 }
 
-.safe-area-inset-bottom {
-  padding-bottom: var(--safe-area-bottom);
+/* ── Material Symbols ── */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Mínimo 44px para zonas táctiles (accesibilidad móvil) */
-.tap-target {
-  min-height: 44px;
-  min-width: 44px;
+/* ── Scrollbar personalizado ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D5C9B4; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B5A898; }
+
+/* ── Safe areas (móvil) ── */
+.safe-area-inset-top    { padding-top:    var(--safe-area-top); }
+.safe-area-inset-bottom { padding-bottom: var(--safe-area-bottom); }
+
+/* ── Tap targets (accesibilidad) ── */
+.tap-target { min-height: 44px; min-width: 44px; }
+
+/* ── Animaciones de entrada ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in-up    { animation: fadeInUp 0.35s ease forwards; }
+.animate-fade-in       { animation: fadeIn 0.25s ease forwards; }
+.animate-slide-in-right { animation: slideInRight 0.3s ease forwards; }
+
+/* ── Slider de precio ── */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #F5AB00;
+  cursor: pointer;
+  margin-top: -7px;
+  box-shadow: 0 2px 8px rgba(245,171,0,0.35);
+  transition: transform 0.1s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: #EAEAE6;
+  border-radius: 2px;
+}
+
+/* ── Selección de texto ── */
+::selection {
+  background: rgba(245,171,0,0.2);
+  color: #1A1A18;
+}
+
+/* ── Focus ring visible para accesibilidad ── */
+:focus-visible {
+  outline: 2px solid #F5AB00;
+  outline-offset: 2px;
 }

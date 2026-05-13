@@ -10,7 +10,7 @@ async function getProducto(id: string, tiendaSlug: string) {
       tienda: { slug: tiendaSlug, activa: true },
     },
     include: {
-      tienda: { select: { slug: true, whatsapp: true } },
+      tienda: { select: { slug: true, nombre: true, whatsapp: true } },
       categoria: true,
       archivos: { orderBy: { orden: 'asc' } },
     },
@@ -45,6 +45,7 @@ export default async function ProductoPage({
         })),
       }}
       tiendaSlug={producto.tienda.slug}
+      tiendaNombre={producto.tienda.nombre}
       tiendaWhatsapp={producto.tienda.whatsapp}
     />
   )

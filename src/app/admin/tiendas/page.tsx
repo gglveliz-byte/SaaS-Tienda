@@ -1,18 +1,11 @@
 import { prisma } from '@/lib/prisma'
-import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui'
 import { CATEGORIA_GENERAL_LABELS, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 
 async function getTiendas() {
   return prisma.tienda.findMany({
     orderBy: { createdAt: 'desc' },
-    include: {
-      plan: true,
-      vendedor: true,
-      _count: {
-        select: { productos: true, pedidos: true },
-      },
-    },
+    include: { plan: true, vendedor: true, _count: { select: { productos: true, pedidos: true } } },
   })
 }
 
@@ -20,101 +13,111 @@ export default async function TiendasPage() {
   const tiendas = await getTiendas()
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Tiendas</h1>
-          <p className="text-gray-400 mt-1">Gestiona todas las tiendas del sistema</p>
+          <h1 className="text-2xl font-bold text-gray-900">Tiendas</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Gestiona todas las tiendas del sistema</p>
         </div>
-        <Link href="/admin/tiendas/nueva">
-          <Button>
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Nueva Tienda
-          </Button>
+        <Link
+          href="/admin/tiendas/nueva"
+          className="inline-flex items-center gap-2 bg-[#FFC107] hover:bg-[#EBB413] text-gray-900 font-semibold px-4 py-2.5 rounded-xl transition-colors text-sm shadow-sm"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+          Nueva Tienda
         </Link>
       </div>
 
       {tiendas.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <div className="text-6xl mb-4">🏪</div>
-            <h3 className="text-xl font-semibold text-white mb-2">No hay tiendas</h3>
-            <p className="text-gray-400 mb-6">Crea la primera tienda para empezar</p>
-            <Link href="/admin/tiendas/nueva">
-              <Button>Crear primera tienda</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
+          <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '36px' }}>storefront</span>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">No hay tiendas</h3>
+          <p className="text-gray-500 text-sm mb-6">Crea la primera tienda para empezar</p>
+          <Link
+            href="/admin/tiendas/nueva"
+            className="inline-flex items-center gap-2 bg-[#FFC107] hover:bg-[#EBB413] text-gray-900 font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
+          >
+            Crear primera tienda
+          </Link>
+        </div>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid gap-3">
           {tiendas.map((tienda) => (
-            <Card key={tienda.id}>
-              <CardContent className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+            <div
+              key={tienda.id}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4 flex items-center justify-between gap-4 hover:shadow-md hover:border-amber-200 transition-all group"
+            >
+              {/* Info */}
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                {/* Avatar */}
+                <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-amber-600" style={{ fontSize: '22px', fontVariationSettings: "'FILL' 1" }}>storefront</span>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center flex-wrap gap-2 mb-1">
                     <Link
                       href={`/admin/tiendas/${tienda.id}`}
-                      className="text-xl font-semibold text-white hover:text-indigo-400"
+                      className="text-base font-bold text-gray-900 hover:text-amber-600 transition-colors"
                     >
                       {tienda.nombre}
                     </Link>
-                    <Badge variant={tienda.activa ? 'success' : 'danger'}>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                      tienda.activa
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-red-50 text-red-600 border-red-200'
+                    }`}>
                       {tienda.activa ? 'Activa' : 'Inactiva'}
-                    </Badge>
-                    <Badge variant="info">
+                    </span>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
                       {CATEGORIA_GENERAL_LABELS[tienda.categoriaGeneral]}
-                    </Badge>
+                    </span>
                   </div>
 
-                  <p className="text-gray-400 text-sm mb-4">
-                    <span className="text-gray-500">URL:</span>{' '}
-                    <code className="bg-gray-800 px-2 py-0.5 rounded">/tienda/{tienda.slug}</code>
-                  </p>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">Plan:</span>
-                      <span className="text-white ml-2">{tienda.plan.nombre}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Vendedor:</span>
-                      <span className="text-white ml-2">
-                        {tienda.vendedor?.nombre || 'Sin asignar'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Productos:</span>
-                      <span className="text-white ml-2">{tienda._count.productos}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Pedidos:</span>
-                      <span className="text-white ml-2">{tienda._count.pedidos}</span>
-                    </div>
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <span className="font-mono bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">/tienda/{tienda.slug}</span>
+                    <span>Plan: <b className="text-gray-700">{tienda.plan.nombre}</b></span>
+                    <span className="hidden sm:inline">Vendedor: <b className="text-gray-700">{tienda.vendedor?.nombre ?? '—'}</b></span>
                   </div>
-
-                  <p className="text-gray-500 text-xs mt-4">
-                    Creada el {formatDate(tienda.createdAt)}
-                  </p>
                 </div>
 
-                <div className="flex gap-2">
-                  <Link href={`/tienda/${tienda.slug}`} target="_blank">
-                    <Button variant="ghost" size="sm">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </Button>
-                  </Link>
-                  <Link href={`/admin/tiendas/${tienda.id}`}>
-                    <Button variant="outline" size="sm">
-                      Editar
-                    </Button>
-                  </Link>
+                {/* Métricas */}
+                <div className="hidden lg:flex items-center gap-6 shrink-0">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-gray-900">{tienda._count.productos}</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Productos</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-gray-900">{tienda._count.pedidos}</p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Pedidos</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Creada</p>
+                    <p className="text-xs font-medium text-gray-600">{formatDate(tienda.createdAt)}</p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Acciones */}
+              <div className="flex items-center gap-2 shrink-0">
+                <Link
+                  href={`/tienda/${tienda.slug}`}
+                  target="_blank"
+                  className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Ver tienda"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>open_in_new</span>
+                </Link>
+                <Link
+                  href={`/admin/tiendas/${tienda.id}`}
+                  className="text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  Editar
+                </Link>
+              </div>
+            </div>
           ))}
         </div>
       )}

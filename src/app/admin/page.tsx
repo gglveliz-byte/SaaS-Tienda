@@ -1,244 +1,147 @@
 import { prisma } from '@/lib/prisma'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 
 async function getEstadisticas() {
-  const [
-    totalTiendas,
-    tiendasActivas,
-    pedidosMes,
-    pedidosPorEstado,
-  ] = await Promise.all([
+  const [totalTiendas, tiendasActivas, pedidosMes, pedidosPorEstado] = await Promise.all([
     prisma.tienda.count(),
     prisma.tienda.count({ where: { activa: true } }),
-    prisma.pedido.findMany({
-      where: {
-        createdAt: {
-          gte: new Date(new Date().setDate(1)),
-        },
-      },
-      select: {
-        total: true,
-        estado: true,
-      },
-    }),
-    prisma.pedido.groupBy({
-      by: ['estado'],
-      _count: true,
-    }),
+    prisma.pedido.findMany({ where: { createdAt: { gte: new Date(new Date().setDate(1)) } }, select: { total: true, estado: true } }),
+    prisma.pedido.groupBy({ by: ['estado'], _count: true }),
   ])
-
-  const ingresosMes = pedidosMes
-    .filter(p => p.estado === 'completado')
-    .reduce((acc, p) => acc + Number(p.total), 0)
-
-  const estadosCounts = {
-    pendiente: 0,
-    en_proceso: 0,
-    completado: 0,
-    cancelado: 0,
-  }
-
-  pedidosPorEstado.forEach(p => {
-    estadosCounts[p.estado] = p._count
-  })
-
-  return {
-    totalTiendas,
-    tiendasActivas,
-    tiendasInactivas: totalTiendas - tiendasActivas,
-    totalPedidosMes: pedidosMes.length,
-    ingresosMes,
-    pedidosPorEstado: estadosCounts,
-  }
+  const ingresosMes = pedidosMes.filter((p) => p.estado === 'completado').reduce((acc, p) => acc + Number(p.total), 0)
+  const ec: Record<string, number> = { pendiente: 0, en_proceso: 0, completado: 0, cancelado: 0 }
+  pedidosPorEstado.forEach((p) => { ec[p.estado] = p._count })
+  return { totalTiendas, tiendasActivas, tiendasInactivas: totalTiendas - tiendasActivas, totalPedidosMes: pedidosMes.length, ingresosMes, pedidosPorEstado: ec }
 }
 
 async function getUltimasTiendas() {
-  return prisma.tienda.findMany({
-    take: 5,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      plan: true,
-      _count: {
-        select: { productos: true, pedidos: true },
-      },
-    },
-  })
+  return prisma.tienda.findMany({ take: 5, orderBy: { createdAt: 'desc' }, include: { plan: true, _count: { select: { productos: true, pedidos: true } } } })
 }
 
 export default async function AdminDashboardPage() {
-  const [stats, ultimasTiendas] = await Promise.all([
-    getEstadisticas(),
-    getUltimasTiendas(),
-  ])
+  const [stats, ultimasTiendas] = await Promise.all([getEstadisticas(), getUltimasTiendas()])
+
+  const metricCards = [
+    { label: 'Total Tiendas', value: stats.totalTiendas, icon: 'storefront', color: 'text-primary bg-primary/10' },
+    { label: 'Tiendas Activas', value: stats.tiendasActivas, icon: 'check_circle', color: 'text-green-600 bg-green-50' },
+    { label: 'Pedidos del Mes', value: stats.totalPedidosMes, icon: 'shopping_bag', color: 'text-blue-600 bg-blue-50' },
+  ]
+
+  const estadoConfig = [
+    { key: 'pendiente', label: 'Pendientes', bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700' },
+    { key: 'en_proceso', label: 'En Proceso', bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700' },
+    { key: 'completado', label: 'Completados', bg: 'bg-green-50 border-green-200', text: 'text-green-700' },
+    { key: 'cancelado', label: 'Cancelados', bg: 'bg-red-50 border-red-200', text: 'text-red-700' },
+  ]
 
   return (
-    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-      <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-gray-400 mt-1 text-sm sm:text-base">Resumen general del sistema</p>
+    <div className="space-y-6">
+      {/* Encabezado */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-on-surface">Dashboard</h1>
+          <p className="text-secondary text-sm mt-0.5">Resumen general del sistema</p>
+        </div>
+        <Link
+          href="/admin/tiendas/nueva"
+          className="flex items-center gap-2 bg-accent-vibrant text-surface-deep font-bold px-4 py-2.5 rounded-lg hover:bg-accent-hover transition-colors text-sm shadow-sm"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+          Nueva tienda
+        </Link>
       </div>
 
-      {/* Estadísticas principales */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        <Card>
-          <CardContent className="p-3 sm:p-4 lg:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-              <div className="p-2 sm:p-3 bg-indigo-600/20 rounded-lg">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-400">Total Tiendas</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-white">{stats.totalTiendas}</p>
-              </div>
+      {/* Métricas + ingresos */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {metricCards.map(({ label, value, icon, color }) => (
+          <div key={label} className="bg-surface rounded-xl shadow-sm border border-border-light p-5 flex items-center gap-4">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+              <span className="material-symbols-outlined" style={{ fontSize: '22px', fontVariationSettings: "'FILL' 1" }}>{icon}</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-3 sm:p-4 lg:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-              <div className="p-2 sm:p-3 bg-green-600/20 rounded-lg">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-400">Tiendas Activas</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-white">{stats.tiendasActivas}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-3 sm:p-4 lg:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-              <div className="p-2 sm:p-3 bg-yellow-600/20 rounded-lg">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-400">Pedidos Mes</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-white">{stats.totalPedidosMes}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-3 sm:p-4 lg:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-              <div className="p-2 sm:p-3 bg-emerald-600/20 rounded-lg">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-400">Ingresos Mes</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-white">{formatPrice(stats.ingresosMes)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pedidos por estado */}
-      <Card>
-        <CardHeader className="p-3 sm:p-4 lg:p-6">
-          <CardTitle className="text-base sm:text-lg">Estado de Pedidos</CardTitle>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-            <div className="p-2 sm:p-3 lg:p-4 bg-yellow-900/20 border border-yellow-800 rounded-lg">
-              <p className="text-xs sm:text-sm text-yellow-400">Pendientes</p>
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-300">{stats.pedidosPorEstado.pendiente}</p>
-            </div>
-            <div className="p-2 sm:p-3 lg:p-4 bg-blue-900/20 border border-blue-800 rounded-lg">
-              <p className="text-xs sm:text-sm text-blue-400">En Proceso</p>
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-300">{stats.pedidosPorEstado.en_proceso}</p>
-            </div>
-            <div className="p-2 sm:p-3 lg:p-4 bg-green-900/20 border border-green-800 rounded-lg">
-              <p className="text-xs sm:text-sm text-green-400">Completados</p>
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-300">{stats.pedidosPorEstado.completado}</p>
-            </div>
-            <div className="p-2 sm:p-3 lg:p-4 bg-red-900/20 border border-red-800 rounded-lg">
-              <p className="text-xs sm:text-sm text-red-400">Cancelados</p>
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-red-300">{stats.pedidosPorEstado.cancelado}</p>
+            <div>
+              <p className="text-xs text-secondary font-medium">{label}</p>
+              <p className="text-xl font-bold text-on-surface mt-0.5">{value}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+        {/* Ingresos — card destacada */}
+        <div className="col-span-2 lg:col-span-1 bg-gradient-to-r from-surface-deep to-[#1a1a2e] rounded-xl shadow-sm border border-surface-muted p-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-accent-vibrant flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-surface-deep" style={{ fontSize: '22px', fontVariationSettings: "'FILL' 1" }}>payments</span>
+          </div>
+          <div>
+            <p className="text-xs text-secondary-fixed-dim font-medium">Ingresos del Mes</p>
+            <p className="text-xl font-bold text-white mt-0.5">{formatPrice(stats.ingresosMes)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Estado de pedidos */}
+      <div className="bg-surface rounded-xl shadow-sm border border-border-light p-5">
+        <h3 className="font-bold text-on-surface mb-4">Estado de Pedidos (Total)</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {estadoConfig.map(({ key, label, bg, text }) => (
+            <div key={key} className={`p-4 rounded-xl border ${bg}`}>
+              <p className={`text-xs font-medium ${text}`}>{label}</p>
+              <p className={`text-2xl font-bold mt-1 ${text}`}>{stats.pedidosPorEstado[key] ?? 0}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Últimas tiendas */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4 lg:p-6">
-          <CardTitle className="text-base sm:text-lg">Últimas Tiendas</CardTitle>
-          <Link
-            href="/admin/tiendas"
-            className="text-xs sm:text-sm text-indigo-400 hover:text-indigo-300"
-          >
+      <div className="bg-surface rounded-xl shadow-sm border border-border-light overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-light">
+          <h3 className="font-bold text-on-surface">Últimas Tiendas</h3>
+          <Link href="/admin/tiendas" className="text-xs text-primary hover:text-accent-hover font-medium transition-colors">
             Ver todas →
           </Link>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
-          {ultimasTiendas.length === 0 ? (
-            <p className="text-gray-500 text-center py-4 sm:py-8 text-sm">
-              No hay tiendas creadas aún.{' '}
-              <Link href="/admin/tiendas/nueva" className="text-indigo-400 hover:underline">
-                Crear primera tienda
-              </Link>
-            </p>
-          ) : (
-            <div className="overflow-x-auto -mx-3 sm:mx-0">
-              <table className="w-full min-w-[500px] text-xs sm:text-sm">
-                <thead>
-                  <tr className="text-left text-gray-400 border-b border-gray-800">
-                    <th className="pb-2 sm:pb-3 font-medium px-3 sm:px-0">Tienda</th>
-                    <th className="pb-2 sm:pb-3 font-medium">Plan</th>
-                    <th className="pb-2 sm:pb-3 font-medium">Prod.</th>
-                    <th className="pb-2 sm:pb-3 font-medium">Ped.</th>
-                    <th className="pb-2 sm:pb-3 font-medium pr-3 sm:pr-0">Estado</th>
+        </div>
+        {ultimasTiendas.length === 0 ? (
+          <div className="px-5 py-12 text-center">
+            <span className="material-symbols-outlined text-border-light" style={{ fontSize: '48px' }}>storefront</span>
+            <p className="text-secondary text-sm mt-2">No hay tiendas creadas aún.</p>
+            <Link href="/admin/tiendas/nueva" className="mt-3 inline-block text-sm text-primary hover:underline font-medium">
+              Crear primera tienda
+            </Link>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-surface-container-low">
+                  <th className="text-left px-5 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Tienda</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Plan</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Prod.</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Ped.</th>
+                  <th className="text-left px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Estado</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-light">
+                {ultimasTiendas.map((tienda) => (
+                  <tr key={tienda.id} className="hover:bg-surface-container-low transition-colors group border-l-[3px] border-transparent hover:border-accent-vibrant">
+                    <td className="px-5 py-3">
+                      <Link href={`/admin/tiendas/${tienda.id}`} className="font-semibold text-on-surface hover:text-primary transition-colors block">
+                        {tienda.nombre}
+                      </Link>
+                      <span className="text-xs text-secondary">/{tienda.slug}</span>
+                    </td>
+                    <td className="px-4 py-3 text-secondary">{tienda.plan.nombre}</td>
+                    <td className="px-4 py-3 text-on-surface font-medium">{tienda._count.productos}</td>
+                    <td className="px-4 py-3 text-on-surface font-medium">{tienda._count.pedidos}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${tienda.activa ? 'bg-green-100 text-green-700' : 'bg-error-container text-on-error-container'}`}>
+                        {tienda.activa ? 'Activa' : 'Inactiva'}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {ultimasTiendas.map((tienda) => (
-                    <tr key={tienda.id} className="text-gray-300">
-                      <td className="py-2 sm:py-3 px-3 sm:px-0">
-                        <Link
-                          href={`/admin/tiendas/${tienda.id}`}
-                          className="font-medium text-white hover:text-indigo-400"
-                        >
-                          {tienda.nombre}
-                        </Link>
-                        <p className="text-xs text-gray-500">/{tienda.slug}</p>
-                      </td>
-                      <td className="py-2 sm:py-3">{tienda.plan.nombre}</td>
-                      <td className="py-2 sm:py-3">{tienda._count.productos}</td>
-                      <td className="py-2 sm:py-3">{tienda._count.pedidos}</td>
-                      <td className="py-2 sm:py-3 pr-3 sm:pr-0">
-                        <span
-                          className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium ${
-                            tienda.activa
-                              ? 'bg-green-900/50 text-green-400'
-                              : 'bg-red-900/50 text-red-400'
-                          }`}
-                        >
-                          {tienda.activa ? 'Activa' : 'Inactiva'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
